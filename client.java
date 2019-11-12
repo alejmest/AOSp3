@@ -85,7 +85,7 @@ public class client {
 			config = new Scanner(c);
 			int id=Integer.parseInt(config.nextLine());
 			
-			
+			new client(id);
 			config.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
