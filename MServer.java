@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MServer {
 	
@@ -24,7 +25,8 @@ public class MServer {
 	protected DataOutputStream[] clientOutStreams;
 	protected DataInputStream[] serverInStreams;
 	protected DataOutputStream[] serverOutStreams;
-	
+	final int id=0;
+	protected AtomicBoolean shutdown=new AtomicBoolean(false);
 	
 	public MServer(int numClients,int numServers)
 	{
@@ -53,6 +55,7 @@ public class MServer {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("All clients connected");
 		for(int x=0;x<numServers;x++)
 		{
 			try 
@@ -68,6 +71,77 @@ public class MServer {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		System.out.println("All servers connected.\nSetup complete, sending start signal to all clients");
+		Message start=new Message("START",-1,id,"n/a","n/a");
+		
+		for(int x=0;x<numClients;x++)
+		{
+			(new ClientListener(id)).start();
+			//public Message(String type,int filename,int senderId,String senderIp,String contents)
+			
+			try 
+			{
+				clientOutStreams[x].writeUTF(start.toString());
+				clientOutStreams[x].flush();
+			}
+			catch (IOException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		for(int x=0;x<numServers;x++)
+		{
+			try 
+			{
+				serverOutStreams[x].flush();
+				serverOutStreams[x].writeUTF(start.toString());
+			}
+			catch (IOException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+	}
+	class ClientListener extends Thread
+	{
+		int id;
+		public ClientListener(int id)
+		{
+			this.id=id;
+		}
+		public void run()
+		{
+			while(true)
+			{
+				if(shutdown.get())	
+					return;
+				
+				try 
+				{
+					Message msg=new Message(clientInStreams[id].readUTF());
+				} 
+				catch (IOException e) 
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	class ServerListener extends Thread
+	{
+		int id;
+		public ServerListener(int id)
+		{
+			this.id=id;
+		}
+		public void run()
+		{
+			
 		}
 	}
 	
