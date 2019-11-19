@@ -33,7 +33,6 @@ public class server {
 	
 	protected int id;
 	
-	
 	public server(int id)
 	{
 		this.id=id;
