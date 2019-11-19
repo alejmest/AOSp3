@@ -19,6 +19,7 @@ public class MServer {
 	protected int numClients,numServers;
 	final int clientStartingPort=5000;
 	final int serverStartingPort=6000;
+	final int reconnectionPort=7000;
 	protected Socket[] clientSockets;
 	protected Socket[] serverSockets;
 	protected DataInputStream[] clientInStreams;
@@ -73,7 +74,7 @@ public class MServer {
 			}
 		}
 		System.out.println("All servers connected.\nSetup complete, sending start signal to all clients");
-		Message start=new Message("START",-1,id,"n/a","n/a");
+		Message start=new Message("START",-1,id,"n/a");
 		
 		for(int x=0;x<numClients;x++)
 		{
@@ -106,6 +107,60 @@ public class MServer {
 			
 		}
 	}
+	class ConnectionListener extends Thread
+	{
+		public void run()
+		{
+			while(true)
+			{
+				try 
+				{
+					ServerSocket ss=new ServerSocket(7000);
+					Socket socket= ss.accept();
+					String remoteIpAddress=socket.getInetAddress().toString().substring(1);
+					
+					if(strIndexOf(remoteIpAddress,clientIP)!=-1) //if the connection we got was from a client IP, add it to the client sockets
+					{
+						
+						int connectingId=strIndexOf(remoteIpAddress,clientIP);
+						System.out.println("Received connection from downed client with id="+connectingId);
+						clientSockets[connectingId]=socket;
+						clientInStreams[connectingId]=new DataInputStream(socket.getInputStream());
+						clientOutStreams[connectingId]=new DataOutputStream(socket.getOutputStream());
+						(new ClientListener(connectingId)).start();
+					}
+					else if(strIndexOf(remoteIpAddress,serverIP)!=-1)
+					{
+						int connectingId=strIndexOf(remoteIpAddress,serverIP);
+						System.out.println("Received connection from downed server with id="+connectingId);
+						serverSockets[connectingId]=socket;
+						serverInStreams[connectingId]=new DataInputStream(socket.getInputStream());
+						serverOutStreams[connectingId]=new DataOutputStream(socket.getOutputStream());
+						(new ServerListener(connectingId)).start();
+					}
+					else
+					{
+						System.out.println("Connection received from bad IP address ("+remoteIpAddress+"). Discarding socket.");
+						socket.close();
+					}
+				} 
+				catch (IOException e) 
+				{
+					System.out.println("Error in receiving reconnection socket");
+				}
+				
+			}
+		}
+	}
+	private int strIndexOf(String string,String[] array)
+	{
+		for(int x=0;x<array.length;x++)
+		{
+			if(string.equals(array[x]))
+				return x;
+		}
+		return -1;
+	}
 	class ClientListener extends Thread
 	{
 		int id;
@@ -115,6 +170,7 @@ public class MServer {
 		}
 		public void run()
 		{
+			System.out.println("Listener for client "+id+" started");
 			while(true)
 			{
 				if(shutdown.get())	
@@ -126,8 +182,11 @@ public class MServer {
 				} 
 				catch (IOException e) 
 				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					System.out.println("Client listener for server "+id+" crashed. Closing sockets");
+					serverSockets[id]=null;
+					serverInStreams[id]=null;
+					serverOutStreams[id]=null;
+					return;
 				}
 			}
 		}
@@ -141,7 +200,38 @@ public class MServer {
 		}
 		public void run()
 		{
-			
+			System.out.println("Listener for server "+id+" started");
+			while(true)
+			{
+				if(shutdown.get())
+				{
+					return;	
+				}
+				
+				try
+				{
+					String msg=serverInStreams[id].readUTF();
+				}
+				catch(IOException e)
+				{
+					System.out.println("Server listener for server "+id+" crashed. Closing sockets");
+					try 
+					{
+						serverInStreams[id].close();
+						serverOutStreams[id].close();
+						serverSockets[id].close();
+					} 
+					catch (IOException e1) 
+					{
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					serverSockets[id]=null;
+					serverInStreams[id]=null;
+					serverOutStreams[id]=null;
+					return;
+				}
+			}
 		}
 	}
 	

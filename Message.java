@@ -9,9 +9,8 @@ public class Message implements Comparable<Message>
 {
 	private String type;
 	private int id;
-	private String ip;
 	private long timestamp;
-	private int fileName;
+	private int fileNum;
 	private String contents;
 	/**
 	 * 
@@ -21,12 +20,11 @@ public class Message implements Comparable<Message>
 	 * @param senderIp: the ip of the sender in request
 	 * @param contents: the contents of the message
 	 */
-	public Message(String type,int filename,int senderId,String senderIp,String contents)
+	public Message(String type,int fileNum,int senderId,String contents)
 	{
 		this.type=type;
 		this.id=senderId;
-		this.fileName=filename;
-		this.ip=senderIp;
+		this.fileNum=fileNum;
 		this.contents=contents;
 		this.timestamp=System.currentTimeMillis();
 	}
@@ -39,9 +37,9 @@ public class Message implements Comparable<Message>
 	 * @param timestamp: the timestamp of the message
 	 * @param contents: the contents of the message
 	 */
-	public Message(String type,int filename,int senderId,String senderIp,long timestamp,String contents)
+	public Message(String type,int fileNum,int senderId,long timestamp,String contents)
 	{
-		this.fileName=filename;
+		this.fileNum=fileNum;
 		this.timestamp=timestamp;
 		this.contents=contents;
 	}
@@ -52,18 +50,17 @@ public class Message implements Comparable<Message>
 	public Message(String message)
 	{
 		String[] messageFields=message.split(",");
-		if (messageFields.length!=6)
+		if (messageFields.length!=5)
 		{
-			System.out.println("Received malformed message string! \t"+message);
+			System.out.println("Received malformed Message string! \t"+message);
 		}
 		else
 		{
-			timestamp=Long.parseLong(messageFields[0]);
-			type=messageFields[1];
-			fileName=Integer.parseInt(messageFields[2]);
-			id=Integer.parseInt(messageFields[3]);
-			ip=messageFields[4];
-			contents=messageFields[5];
+			type=messageFields[0];
+			fileNum=Integer.parseInt(messageFields[1]);
+			id=Integer.parseInt(messageFields[2]);
+			timestamp=Long.parseLong(messageFields[3]);
+			contents=messageFields[4];
 		}
 	}
 	public long getTimestamp()
@@ -74,9 +71,9 @@ public class Message implements Comparable<Message>
 	{
 		return type;
 	}
-	public int getFilename()
+	public int getFileNum()
 	{
-		return fileName;
+		return fileNum;
 	}
 	public void setType(String fn)
 	{
@@ -85,10 +82,6 @@ public class Message implements Comparable<Message>
 	public int getId()
 	{
 		return id;
-	}
-	public String getIp()
-	{
-		return ip;
 	}
 	public String getContents()
 	{
@@ -118,7 +111,7 @@ public class Message implements Comparable<Message>
 	}
 	public String toString()
 	{
-		return timestamp+","+type+","+fileName+","+id+","+ip+","+contents;
+		return type+","+fileNum+","+id+","+timestamp+","+contents;
 	}
 	
 }

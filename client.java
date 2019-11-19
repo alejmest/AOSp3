@@ -16,6 +16,7 @@ public class client {
 	protected final String MServerIP = "10.176.69.58";
 	final int MServerPort=5000;
 	final int serverPort=6000;
+	final int reconnectionPort=7000;
 	
 	public Socket[] serverSockets;
 	public DataInputStream[] serverInStreams;
