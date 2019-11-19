@@ -10,7 +10,7 @@ public class Message implements Comparable<Message>
 	private String type;
 	private int id;
 	private long timestamp;
-	private int fileNum;
+	private String fileName;
 	private String contents;
 	/**
 	 * 
@@ -20,11 +20,11 @@ public class Message implements Comparable<Message>
 	 * @param senderIp: the ip of the sender in request
 	 * @param contents: the contents of the message
 	 */
-	public Message(String type,int fileNum,int senderId,String contents)
+	public Message(String type,String fileName,int senderId,String contents)
 	{
 		this.type=type;
 		this.id=senderId;
-		this.fileNum=fileNum;
+		this.fileName=fileName;
 		this.contents=contents;
 		this.timestamp=System.currentTimeMillis();
 	}
@@ -37,9 +37,9 @@ public class Message implements Comparable<Message>
 	 * @param timestamp: the timestamp of the message
 	 * @param contents: the contents of the message
 	 */
-	public Message(String type,int fileNum,int senderId,long timestamp,String contents)
+	public Message(String type,String fileName,int senderId,long timestamp,String contents)
 	{
-		this.fileNum=fileNum;
+		this.fileName=fileName;
 		this.timestamp=timestamp;
 		this.contents=contents;
 	}
@@ -57,7 +57,7 @@ public class Message implements Comparable<Message>
 		else
 		{
 			type=messageFields[0];
-			fileNum=Integer.parseInt(messageFields[1]);
+			fileName=messageFields[1];
 			id=Integer.parseInt(messageFields[2]);
 			timestamp=Long.parseLong(messageFields[3]);
 			contents=messageFields[4];
@@ -71,9 +71,9 @@ public class Message implements Comparable<Message>
 	{
 		return type;
 	}
-	public int getFileNum()
+	public String getFileName()
 	{
-		return fileNum;
+		return fileName;
 	}
 	public void setType(String fn)
 	{
@@ -111,7 +111,7 @@ public class Message implements Comparable<Message>
 	}
 	public String toString()
 	{
-		return type+","+fileNum+","+id+","+timestamp+","+contents;
+		return type+","+fileName+","+id+","+timestamp+","+contents;
 	}
 	
 }

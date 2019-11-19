@@ -15,7 +15,7 @@ import java.util.Scanner;
 
 public class server {
 
-	protected final String[] clientIP= {"10.176.69.56","10.176.69.57"}; //
+	protected final String[] clientIP= {"10.176.69.56","10.176.69.57"}; 
 	protected final String[] serverIP= {"10.176.69.51","10.176.69.52","10.176.69.53","10.176.69.54","10.176.69.55"};
 	protected final String MServerIP = "10.176.69.58";
 	
@@ -135,6 +135,38 @@ public class server {
 				System.exit(0);
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}
+		}
+		
+		for(int x=0;x<serverIP.length;x++) //instantiates connections to clients
+		{
+			if(x==id)
+				continue;
+			else
+			{
+				System.out.print("Connecting to server "+x+" ... ");
+				try {
+					if(reconnection)
+					{
+						clientSockets[x]=new Socket(MServerIP,reconnectionPort);
+					}
+					else
+					{
+						clientSockets[x]=new Socket(MServerIP,MServerPort+id);
+					}
+					
+					System.out.print("success!\n");
+					clientInStreams[x]=new DataInputStream(clientSockets[x].getInputStream());
+					clientOutStreams[x]=new DataOutputStream(clientSockets[x].getOutputStream());
+					
+				} 
+				catch (IOException e) 
+				{
+					System.out.print("failure.");
+					System.exit(0);
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		
