@@ -15,7 +15,7 @@ import java.util.Scanner;
 
 public class server {
 
-	protected final String[] clientIP= {"10.176.69.56","10.176.69.57"};
+	protected final String[] clientIP= {"10.176.69.56","10.176.69.57"}; //
 	protected final String[] serverIP= {"10.176.69.51","10.176.69.52","10.176.69.53","10.176.69.54","10.176.69.55"};
 	protected final String MServerIP = "10.176.69.58";
 	
