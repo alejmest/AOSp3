@@ -74,7 +74,7 @@ public class MServer {
 			}
 		}
 		System.out.println("All servers connected.\nSetup complete, sending start signal to all clients");
-		Message start=new Message("START",-1,id,"n/a");
+		Message start=new Message("START","n/a",id,"n/a");
 		
 		for(int x=0;x<numClients;x++)
 		{
@@ -96,8 +96,8 @@ public class MServer {
 		{
 			try 
 			{
-				serverOutStreams[x].flush();
 				serverOutStreams[x].writeUTF(start.toString());
+				serverOutStreams[x].flush();
 			}
 			catch (IOException e) 
 			{
