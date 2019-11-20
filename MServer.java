@@ -94,6 +94,7 @@ public class MServer {
 		}
 		for(int x=0;x<numServers;x++)
 		{
+			(new ServerListener(id)).start();
 			try 
 			{
 				serverOutStreams[x].writeUTF(start.toString());
@@ -104,7 +105,6 @@ public class MServer {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
 		}
 	}
 	class ConnectionListener extends Thread
@@ -211,6 +211,10 @@ public class MServer {
 				try
 				{
 					String msg=serverInStreams[id].readUTF();
+					if(msg.getType().equals("HEARTBEAT"))
+					{
+						//TODO: Add updating code here
+					}
 				}
 				catch(IOException e)
 				{

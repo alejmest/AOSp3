@@ -33,55 +33,15 @@ public class server {
 	
 	protected int id;
 	
+	ArrayList<Chunk> chunks;
 	
 	public server(int id)
 	{
 		this.id=id;
+		chunks=new ArrayList<Chunks>();
 		connect(false);
-		
 	}
-	public void crash()
-	{
-		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~\nSimulating server crash\n~~~~~~~~~~~~~~~~~~~~~~~");
-		System.out.println("Server listener for server "+id+" crashed. Closing sockets");
-		
-		try
-		{
-			MServerInStream.close();
-			MServerOutStream.close();
-			MServerSocket.close();
-			for(int x=0;x<clientSockets.length;x++)
-			{
-				clientInStreams[x].close();
-				clientOutStreams[x].close();
-				clientSockets[x].close();
-				
-			}
-			clientSockets[id]=null;
-			clientInStreams[id]=null;
-			clientOutStreams[id]=null;
-		}
-		catch(IOException e)
-		{
-			System.out.println("Error in crashing");
-			e.printStackTrace();
-		}
-		
-		//*Wait here!*
-		Random r= new Random();
-		int wait=r.nextInt(1500);
-		System.out.println("Waiting for "+(double)(wait/1000)+" seconds");
-		try 
-		{
-			Thread.sleep(wait);
-		} 
-		catch (InterruptedException e) 
-		{
-			System.out.println("Error while waiting");
-		}
-		connect(true);
-		return;
-	}
+	
 	public void connect(boolean reconnection)
 	{
 		try
@@ -169,7 +129,106 @@ public class server {
 				}
 			}
 		}
+	}
+	public void crash()
+	{
+		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~\nSimulating server crash\n~~~~~~~~~~~~~~~~~~~~~~~");
+		System.out.println("Server listener for server "+id+" crashed. Closing sockets");
 		
+		try
+		{
+			MServerInStream.close();
+			MServerOutStream.close();
+			MServerSocket.close();
+			for(int x=0;x<clientSockets.length;x++)
+			{
+				clientInStreams[x].close();
+				clientOutStreams[x].close();
+				clientSockets[x].close();
+				
+			}
+			clientSockets[id]=null;
+			clientInStreams[id]=null;
+			clientOutStreams[id]=null;
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error in crashing");
+			e.printStackTrace();
+		}
+		
+		//*Wait here!*
+		Random r= new Random();
+		int wait=r.nextInt(1500);
+		System.out.println("Waiting for "+(double)(wait/1000)+" seconds");
+		try 
+		{
+			Thread.sleep(wait);
+		} 
+		catch (InterruptedException e) 
+		{
+			System.out.println("Error while waiting");
+		}
+		connect(true);
+		return;
+	}
+	class ClientListener implements Thread
+	{
+		int threadId;
+		public ClientListener(int id)
+		{
+			threadId=id;
+		}
+		public void run()
+		{
+			while(true)
+			{
+				Message msg=new Message(clientInStreams[threadId].readUTF());
+				if(msg.getType().equals("READY")) 
+				{
+					Message reply=new Message("READYACK",msg.getFilename(),threadId,"ready");
+					clientOutStreams[threadId].writeUTF(reply.toString);
+					clientOutStreams[threadId].flush();
+				}
+				else if(msg.getType().equals("COMMIT"))
+				{
+					//TODO: Add code here to append to a chunk
+					
+				}
+				else if(msg.getType().equals("READ"))
+				{
+					int offset=Integer.parseInt(msg.getContents());
+					
+				}
+				else
+				{
+					System.out.println("Received malformed message: "+msg.toString());
+				}
+			}
+		}
+	}
+	class ServerListener extends Thread
+	{
+		int threadId;
+		public ServerListener(int id)
+		{
+			threadId=id;
+		}
+		public void run()
+		{
+			
+		}
+	}
+	class ConnectionListener extennds Thread
+	{
+		public ConnectionListener()
+		{
+			
+		}
+		public void run()
+		{
+			
+		}
 	}
 	public static void main(String[] args) throws FileNotFoundException
 	{

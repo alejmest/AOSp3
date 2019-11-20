@@ -26,11 +26,14 @@ public class client {
 	public DataInputStream MServerInStream;
 	public DataOutputStream MServerOutStream;
 	
+	public ArrayList<Integer> cohort;
+	
 	public client(int id)
 	{
 		serverSockets=new Socket[serverIP.length];
 		serverInStreams=new DataInputStream[serverIP.length];
 		serverOutStreams=new DataOutputStream[serverIP.length];
+		cohort=new ArrayList<Integer>();
 		this.id=id;
 		
 		try
@@ -74,8 +77,101 @@ public class client {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				System.exit(0);
-			}
+			}	
+		}
+		
+		Message start=new Message(MServerInStream.readUTF());
+		if(start.getType().equals("START"))
+		{
+			System.out.println("Received start message");
+			(new MServerListener()).start();
 			
+			for(int x=0;x<serverIP.length;x++)
+			{
+				(new ServerListener(id)).start();
+			}
+		}
+		else
+		{
+			System.out.println("Error in starting... ");
+			shutdown();
+			System.exit(0);
+		}
+	}
+	class ServerListener extends Thread
+	{
+		int threadId;
+		public ServerListener(int id)
+		{
+			threadId=id;
+		}
+		public void run()
+		{
+			while(true)
+			{
+				Message msg=new Message(serverInStreams[threadId].readUTF());
+				if(msg.getType().equals("READYACK"))
+				{
+					cohort.remove(msg.getId());
+					while(cohort.size()>0)
+					{
+						continue;
+					}
+					Message commit=new Message("COMMIT",msg.getFileName(),id,contents);
+					serverOutStreams[threadId].writeUTF(commit.toString);
+					serverOutStreams[threadId].flush();
+				}
+				else if(msg.getType().equals("COMMITACK"))
+				{
+					System.out.println("Appended successfully to file"); // TODO: Add data fields to this log line
+					Message success=new Message("SUCCESS",msg.getFilename(),id,contents);
+					MServerOutStream.writeUTF(success);
+					MServerOutStream.flush();
+				}
+				else
+				{
+					System.out.println("Received malformed message: "+msg.toString());
+				}
+			}
+		}
+	}
+	class MServerListener extends Thread
+	{
+		public MServerListener()
+		{
+			
+		}
+		public void run()
+		{
+			
+		}
+		
+	}
+	public void shutdown()
+	{
+		System.out.println("Shutting down system");
+		try 
+		{
+			MServerInStream.close();
+			MServerOutStream.close();
+			MServerSocket.close();
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		for(int x=0;x<serverSockets.length;x++)
+		{
+			try
+			{
+				serverInStreams[x].close();
+				serverOutStreams[x].close();
+				serverSockets[x].close();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 	public static void main(String[] args)
